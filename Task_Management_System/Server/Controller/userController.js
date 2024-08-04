@@ -5,10 +5,10 @@ const jwt = require('jsonwebtoken');
 // Register new user
 const register = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, name } = req.body;
         
         // Validate input
-        if (!email || !password) {
+        if (!email || !password || !name) {
             return res.status(400).json({ message: 'Email and password are required' });
         }
 
@@ -20,7 +20,7 @@ const register = async (req, res) => {
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        await User.create({ email, password: hashedPassword });
+        await User.create({ email, password: hashedPassword ,name ,isAdmin: false});
 
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
@@ -56,7 +56,7 @@ const login = async (req, res) => {
             expiresIn: '1d',
         });
 
-        res.status(200).json({ message: 'Login successful', data: { token } });
+        res.status(200).json({ message: 'Login successful',success:true, data: { token } });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error during login' });
@@ -66,7 +66,7 @@ const login = async (req, res) => {
 // Update user password
 const updatePassword = async (req, res) => {
     try {
-        const { email, oldPassword, newPassword } = req.body;
+        const { email, oldPassword, newPassword, name } = req.body;
         
         // Validate input
         if (!email || !oldPassword || !newPassword) {
@@ -118,9 +118,23 @@ const getCurrentUserInfo=async(req, res)=>{
     }
 }
 
+
+const getAllUsers= async(req, res)=>{
+    try{
+
+        const users= await User.findAll();
+        res.status(200).json(users);
+
+    }catch(error){
+        console.log(error);
+        res.status(500).json({message:"Server error during fectching users"});
+    }
+}
+
 module.exports = {
     register,
     login,
     updatePassword,
     getCurrentUserInfo,
+    getAllUsers,
 }

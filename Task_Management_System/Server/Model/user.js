@@ -8,6 +8,11 @@ const User = sequelize.define('user', {
         primaryKey: true,
         allowNull: false
     },
+    name:{
+        type:DataTypes.STRING,
+        allowNull:false,
+        
+    },
     email: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -16,6 +21,10 @@ const User = sequelize.define('user', {
     password: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    isAdmin:{
+        type:DataTypes.BOOLEAN,
+        defaultValue:false
     }
 });
 
