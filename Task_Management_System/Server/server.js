@@ -17,16 +17,20 @@ app.use(express.json());
 app.use("/app/v1/users",userRouter);
 
 
-sequelize.sync({ force: true }) // This will drop and recreate tables
-    .then(() => {
-        console.log("Database & tables created!");
-        // Start server after syncing
+const startServer = async () => {
+    try {
+        // Sync all models
+        await sequelize.sync({ alter: true }); // alter: true updates existing tables if needed
+
+        // Start server
         app.listen(process.env.PORT || 8080, () => {
             console.log(`Server is listening on port ${process.env.PORT || 8080}`);
         });
-    })
-    .catch((error) => {
-        console.error('Unable to connect to the database:', error);
-    });
 
+        console.log("Database synchronized successfully.");
+    } catch (error) {
+        console.error("Unable to connect to the database:", error);
+    }
+};
 
+startServer();
