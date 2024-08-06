@@ -13,27 +13,19 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import {message} from 'antd';
-import { LoginUser } from '../../../APICalls/user';
+import { LoginUser, RegisterUser } from '../../../APICalls/user';
 import {Link as RouterLink} from 'react-router-dom';
 
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
 
-// TODO remove, this demo shouldn't need to reset the theme.
 
 const defaultTheme = createTheme();
 
 export default function SignInSide() {
+
+  const ValidateEmail=(email)=>{
+    const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -41,9 +33,14 @@ export default function SignInSide() {
       email: formData.get('email'),
       password: formData.get('password'),
     };
+    
+    if(!ValidateEmail(values.email)){
+      return message.error('Invalid email format');
+    }
+  
     try {
       const response = await LoginUser(values);
-      if (response.message) {
+      if (response.success) {
         message.success(response.message);
         localStorage.setItem('TMS', JSON.stringify(response.data));
         window.location.href = '/';
@@ -134,7 +131,6 @@ export default function SignInSide() {
                   </RouterLink>
                 </Grid>
               </Grid>
-              <Copyright sx={{ mt: 5 }} />
             </Box>
           </Box>
         </Grid>

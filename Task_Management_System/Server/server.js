@@ -3,6 +3,7 @@ const morgan=require('morgan');
 const dotenv=require('dotenv');
 const sequelize = require('./config/db');
 const userRouter = require('./Routes/userRoutes');
+const taskRouter = require('./Routes/taskRouter');
 
 // configure dotenv
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(express.json());
 
 //routes
 app.use("/app/v1/users",userRouter);
+app.use("/app/v1/tasks",taskRouter);
 
 
 const startServer = async () => {

@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const User = require('../Model/user');
+const User = require('../Model/User');
 const jwt = require('jsonwebtoken');
 
 // Register new user
@@ -36,23 +36,24 @@ const login = async (req, res) => {
         
         // Validate input
         if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required' });
+            return res.status(400).json({ message: 'Email and password are required' , success: false});
         }
 
         // Find user
         const user = await User.findOne({ where: { email } });
+        console.log("check user",user);
         if (!user) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(401).json({ message: 'Invalid credentials', success: false });
         }
 
         // Check password
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+            return res.status(401).json({ message: 'Invalid credentials', success: false });
         }
 
         // Generate token
-        const token = jwt.sign({ userId: user.id }, process.env.SecretKey, {
+        const token = jwt.sign({ userId: user.id ,isAdmin:user.isAdmin, name:user.name}, process.env.SecretKey, {
             expiresIn: '1d',
         });
 
@@ -99,15 +100,12 @@ const updatePassword = async (req, res) => {
 
 const getCurrentUserInfo=async(req, res)=>{
     try{
-        const userId=req.body.userId;
-
-        // find user
+        const userId=req.user.userId;
+        console.log("User :::",req.body)
         const user= await User.findByPk(userId);
-
         if(!user){
             return res.status(404).json({message:"User not found"});
         }
-
         // return user info excluding password
         const{password,...userInfo}=user.toJSON();
         res.status(200).json(userInfo);
