@@ -44,7 +44,7 @@ const createTask = async (req, res) => {
           createdBy: creatorName,
       });
 
-      return res.status(201).json({ message: 'Task created successfully', task: newTask });
+      return res.status(201).json({ message: 'Task created successfully', data: newTask });
   } catch (error) {
       res.status(500).json({ message: error.message });
   }
@@ -111,7 +111,7 @@ const updateTask = async (req, res) => {
               userId,
           });
 
-          return res.status(200).json(task);
+          return res.status(200).json({message:"Task Updated Successfully", data:task});
       }
 
       res.status(403).json({ message: 'You are not authorized to update this task' });

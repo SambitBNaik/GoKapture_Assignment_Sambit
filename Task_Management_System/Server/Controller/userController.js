@@ -108,7 +108,7 @@ const getCurrentUserInfo=async(req, res)=>{
         }
         // return user info excluding password
         const{password,...userInfo}=user.toJSON();
-        res.status(200).json(userInfo);
+        res.status(200).json({message:"Current user fetched successfully", success:true,data:user});
 
     }catch(error){
         console.error(error);
