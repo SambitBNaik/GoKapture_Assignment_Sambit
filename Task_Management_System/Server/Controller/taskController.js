@@ -12,14 +12,14 @@ const createTask = async (req, res) => {
 
       // Validate input
       if (!title || !description || !status || !priority || !dueDate) {
-          return res.status(400).json({ message: 'All task fields are required' });
+          return res.status(400).json({ message: 'All task fields are required', success:false });
       }
 
       // Check if userId is present in the database
       if (userId) {
           const user = await User.findByPk(userId);
           if (!user) {
-              return res.status(404).json({ message: 'User not found' });
+              return res.status(404).json({ message: 'User not found', success:false });
           }
       }
 
@@ -44,7 +44,7 @@ const createTask = async (req, res) => {
           createdBy: creatorName,
       });
 
-      return res.status(201).json({ message: 'Task created successfully', data: newTask });
+      return res.status(201).json({ message: 'Task created successfully',success:true ,data: newTask });
   } catch (error) {
       res.status(500).json({ message: error.message });
   }
@@ -55,10 +55,10 @@ const getTasks = async (req, res) => {
     const isAdmin = req.user.isAdmin;
     if(isAdmin){
       const AllTask= await Task.findAll();
-      return res.status(200).json({message:"Fetched all task successfully", data: AllTask});
+      return res.status(200).json({message:"Fetched all task successfully",success:true,data: AllTask});
     }
 
-    return res.status(401).json({message:"Admin can only fetched"});
+    return res.status(401).json({message:"Admin can only fetched", success:false});
   } catch (error) {
       res.status(500).json({ message: error.message });
   }
@@ -75,7 +75,7 @@ const getTaskById= async( req, res)=>{
         if(!task){
           return res.status(404).json({message:"Task not found"});
         }
-        res.status(200).json(task);
+        res.status(200).json({message:"Task fetched successfully",success:true, data:task});
     }catch(error){
         res.status(500).json({message:error.message});
     }
@@ -89,7 +89,7 @@ const updateTask = async (req, res) => {
       const task = await Task.findByPk(taskId);
 
       if (!task) {
-          return res.status(404).json({ message: 'Task not found' });
+          return res.status(404).json({ message: 'Task not found', success:false });
       }
 
       // Ensure the user is authorized to update the task
@@ -111,7 +111,7 @@ const updateTask = async (req, res) => {
               userId,
           });
 
-          return res.status(200).json({message:"Task Updated Successfully", data:task});
+          return res.status(200).json({message:"Task Updated Successfully", success: true,data:task});
       }
 
       res.status(403).json({ message: 'You are not authorized to update this task' });
@@ -128,16 +128,16 @@ const updateTask = async (req, res) => {
       const task = await Task.findByPk(taskId);
   
       if (!task) {
-        return res.status(404).json({ message: 'Task not found' });
+        return res.status(404).json({ message: 'Task not found', success:false });
       }
   
       // Ensure the user is authorized to delete the task
       if (req.user.isAdmin || task.userId === req.user.id) {
         await task.destroy();
-        return res.status(200).send({message:"Task Deleted Successfully"});
+        return res.status(200).send({message:"Task Deleted Successfully", success:true});
       }
   
-      res.status(403).json({ message: 'You are not authorized to delete this task' });
+      res.status(403).json({ message: 'You are not authorized to delete this task' , success:false});
     } catch (error) {
       res.status(500).json({ message: error.message });
     }

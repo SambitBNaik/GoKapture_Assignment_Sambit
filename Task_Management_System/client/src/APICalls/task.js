@@ -18,17 +18,17 @@ export const GetAllTask=async(payload)=>{
             "/app/v1/tasks/getTask",
             payload
         );
+        
         return response?.data;
     }catch(error){
         return error?.response?.data || error;
     }
 }
 
-export const GetTaskById= async(payload)=>{
+export const GetTaskById= async(id)=>{
     try{
         const response= await axiosInstance.get(
-            `/app/v1/tasks/getTaskById/${id}`,
-            payload
+            `/app/v1/tasks/getTaskById/${id}`
         )
         return response?.data;
     }catch(error){
@@ -36,23 +36,22 @@ export const GetTaskById= async(payload)=>{
     }
 }
 
-export const UpdateTask= async(payload)=>{
+export const UpdateTask= async(id, payload)=>{
     try{
         const response=await axiosInstance.patch(
             `/app/v1/tasks/updateTask/${id}`,
             payload
         )
-        response?.data;
+        return response?.data;
     }catch(error){
         return error?.response?.data || error;
     }
 }
 
-export const DeleteTask= async(payload)=>{
+export const DeleteTask= async(id)=>{
     try{
         const response= await axiosInstance.delete(
             `/app/v1/tasks/deleteTask/${id}`,
-            payload
         )
         return response?.data;
     }catch(error){

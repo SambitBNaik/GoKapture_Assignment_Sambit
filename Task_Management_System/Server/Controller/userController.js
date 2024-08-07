@@ -121,7 +121,7 @@ const getAllUsers= async(req, res)=>{
     try{
 
         const users= await User.findAll();
-        res.status(200).json(users);
+        res.status(200).json({message:"All user data fetched successfully", success:true, data:users});
 
     }catch(error){
         console.log(error);
