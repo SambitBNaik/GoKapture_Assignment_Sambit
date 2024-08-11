@@ -56,6 +56,7 @@ const AddTaskModal = ({open, onClose}) => {
            <TextField
            margin='normal'
            label="Description"
+           multiline
            fullWidth
            variant='outlined'
            value={description}

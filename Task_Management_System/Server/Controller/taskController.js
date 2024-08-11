@@ -53,12 +53,19 @@ const createTask = async (req, res) => {
 const getTasks = async (req, res) => {
   try {
     const isAdmin = req.user.isAdmin;
-    if(isAdmin){
-      const AllTask= await Task.findAll();
-      return res.status(200).json({message:"Fetched all task successfully",success:true,data: AllTask});
-    }
+    // if(isAdmin){
+    //   const AllTask= await Task.findAll();
+    //   return res.status(200).json({message:"Fetched all task successfully",success:true,data: AllTask});
+    // }
 
-    return res.status(401).json({message:"Admin can only fetched", success:false});
+    // return res.status(401).json({message:"Admin can only fetched", success:false});
+
+    const AllTask= await Task.findAll();
+    if(AllTask){
+      return res.status(200).json({message:"Fetched all task successfully", success:true, data:AllTask});
+
+    }
+    return res.status(401).json({message:"Unable to fetch dara", success: false})
   } catch (error) {
       res.status(500).json({ message: error.message });
   }
@@ -90,29 +97,42 @@ const updateTask = async (req, res) => {
 
       if (!task) {
           return res.status(404).json({ message: 'Task not found', success:false });
+      }else{
+         
+        await task.update({
+          title,
+          description,
+          status,
+          priority,
+          dueDate,
+          userId,
+        });
+
+        return res.status(200).json({message:"Task Updated Successfully", success: true,data:task});
+
       }
 
       // Ensure the user is authorized to update the task
-      if (req.user.isAdmin || task.userId === req.user.id) {
-          // Check if userId exists if provided
-          if (userId) {
-              const user = await User.findByPk(userId);
-              if (!user) {
-                  return res.status(404).json({ message: 'User not found' });
-              }
-          }
+      // if (req.user.isAdmin || task.userId === req.user.id) {
+      //     // Check if userId exists if provided
+      //     if (userId) {
+      //         const user = await User.findByPk(userId);
+      //         if (!user) {
+      //             return res.status(404).json({ message: 'User not found' });
+      //         }
+      //     }
 
-          await task.update({
-              title,
-              description,
-              status,
-              priority,
-              dueDate,
-              userId,
-          });
+      //     await task.update({
+      //         title,
+      //         description,
+      //         status,
+      //         priority,
+      //         dueDate,
+      //         userId,
+      //     });
 
-          return res.status(200).json({message:"Task Updated Successfully", success: true,data:task});
-      }
+      //     return res.status(200).json({message:"Task Updated Successfully", success: true,data:task});
+      // }
 
       res.status(403).json({ message: 'You are not authorized to update this task' });
   } catch (error) {

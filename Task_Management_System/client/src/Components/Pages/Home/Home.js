@@ -1,6 +1,6 @@
 import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
     Paper, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField, 
-    FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+    FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import AddTaskModal from '../../Modal/AddTaskModal';
 import { GetCurrentUser, GetAllUser } from '../../../APICalls/user';
@@ -16,6 +16,7 @@ const Home = () => {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [updatedTask, setUpdatedTask] = useState({});
     const [isAdmin, setIsAdmin] = useState(false);
+    const [currentUserId, setCurrentUserId] = useState(null);
 
     const handleOpen = () => setModalOpen(true);
     const handleClose = () => setModalOpen(false);
@@ -27,35 +28,30 @@ const Home = () => {
     const handleEditDialogClose = () => setEditDialogOpen(false);
 
     useEffect(() => {
-        const fetchTasks = async () => {
+        const fetchData = async () => {
             try {
                 // Fetch user information to check admin status
                 const userResponse = await GetCurrentUser();
-                console.log('User Response:', userResponse);
-
                 if (userResponse.success) {
                     setIsAdmin(userResponse.data.isAdmin);
+                    setCurrentUserId(userResponse.data.id);
 
                     // Fetch all tasks
                     const taskResponse = await GetAllTask();
-                    console.log('Task Response:', taskResponse);
-
                     if (taskResponse.success) {
-                        const fetchedTasks = taskResponse.data; // Extract tasks from the response
+                        const fetchedTasks = taskResponse.data;
 
                         // Fetch all users for mapping user IDs to usernames
                         const usersResponse = await GetAllUser();
                         if (usersResponse.success) {
-                            setUsers(usersResponse.data); // Set the users
+                            setUsers(usersResponse.data);
                         } else {
                             console.error('Failed to fetch users:', usersResponse.message);
                         }
 
                         if (!userResponse.data.isAdmin) {
-                            // Filter tasks if the user is not an admin
                             setTasks(fetchedTasks.filter(task => task.userId === userResponse.data.id));
                         } else {
-                            // Set all tasks if the user is an admin
                             setTasks(fetchedTasks);
                         }
                     } else {
@@ -65,11 +61,11 @@ const Home = () => {
                     console.error('Failed to fetch user:', userResponse.message);
                 }
             } catch (error) {
-                console.error('Error fetching tasks:', error);
+                console.error('Error fetching data:', error);
             }
         };
 
-        fetchTasks();
+        fetchData();
     }, [isModalOpen]);
 
     const handleUpdateTask = async () => {
@@ -104,22 +100,23 @@ const Home = () => {
         setUpdatedTask(prev => ({ ...prev, [name]: value }));
     };
 
-    // Inline styles for text colors based on status and priority
     const statusColors = {
-        Todo: { color: 'red' },
-        'In Progress': { color: 'blue' },
-        Done: { color: 'green' }
+        Todo: { color: 'red', backgroundColor: '#f8d7da', padding: '4px', borderRadius: '4px' },
+        'In Progress': { color: 'blue', backgroundColor: '#cce5ff', padding: '4px', borderRadius: '4px' },
+        Done: { color: 'green', backgroundColor: '#d4edda', padding: '4px', borderRadius: '4px' }
     };
 
     const priorityColors = {
-        Low: { color: 'grey' },
-        Medium: { color: 'orange' },
-        High: { color: 'red' }
+        Low: { color: 'purple', backgroundColor: '#e2e3e5', padding: '4px', borderRadius: '4px' },
+        Medium: { color: 'orange', backgroundColor: '#fff3cd', padding: '4px', borderRadius: '4px' },
+        High: { color: 'red', backgroundColor: '#f8d7da', padding: '4px', borderRadius: '4px' }
     };
 
     // Map user IDs to usernames
     const userMap = users.reduce((map, user) => {
-        map[user.id] = user.name;
+        if (user && user.id) {
+            map[user.id] = user.name;
+        }
         return map;
     }, {});
 
@@ -179,14 +176,14 @@ const Home = () => {
                         </Select>
                     </FormControl>
                     <TextField
-                          margin="dense"
-                          name="dueDate"
-                          label="Due Date"
-                          fullWidth
-                          variant="standard"
-                          type="date"
-                          value={updatedTask.dueDate ? new Date(updatedTask.dueDate).toISOString().split('T')[0] : ''}
-                          onChange={handleChange}
+                        margin="dense"
+                        name="dueDate"
+                        label="Due Date"
+                        fullWidth
+                        variant="standard"
+                        type="date"
+                        value={updatedTask.dueDate ? new Date(updatedTask.dueDate).toISOString().split('T')[0] : ''}
+                        onChange={handleChange}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -200,26 +197,41 @@ const Home = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
+                            <TableCell sx={{fontWeight: 'bold'}}>Task ID</TableCell>
                             <TableCell sx={{fontWeight: 'bold'}}>Title</TableCell>
                             <TableCell sx={{fontWeight: 'bold'}}>Description</TableCell>
                             <TableCell sx={{fontWeight: 'bold'}}>Status</TableCell>
                             <TableCell sx={{fontWeight: 'bold'}}>Priority</TableCell>
                             <TableCell sx={{fontWeight: 'bold'}}>Due Date</TableCell>
                             <TableCell sx={{fontWeight: 'bold'}}>Assigned User</TableCell>
-                            {isAdmin && <TableCell sx={{fontWeight: 'bold'}}>Actions</TableCell>}
+                            <TableCell sx={{fontWeight: 'bold'}}>Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {tasks.length > 0 ? (
                             tasks.map(task => (
                                 <TableRow key={task.id}>
+                                    <TableCell>{task.id}</TableCell>
                                     <TableCell>{task.title}</TableCell>
-                                    <TableCell>{task.description}</TableCell>
-                                    <TableCell style={statusColors[task.status] || {}}>{task.status}</TableCell>
-                                    <TableCell style={priorityColors[task.priority] || {}}>{task.priority}</TableCell>
+                                    <TableCell
+                                    variant='body1'
+                                    sx={{
+                                        whiteSpace:'nowrap',
+                                        overflow: 'hidden',
+                                        textOverflow:'ellipsis',
+                                        marginBottom: 1,
+                                        maxWidth:'500px',
+                                    }} 
+                                    >{task.description}</TableCell>
+                                    <TableCell>
+                                        <Box sx={statusColors[task.status] || {}}>{task.status}</Box>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Box sx={priorityColors[task.priority] || {}}>{task.priority}</Box>
+                                    </TableCell>
                                     <TableCell>{task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-GB') : ''}</TableCell>
                                     <TableCell>{userMap[task.userId] || 'Unknown User'}</TableCell>
-                                    {isAdmin || task.userId === GetCurrentUser().data.id ? (
+                                    {(isAdmin || task.userId === currentUserId) && (
                                         <TableCell>
                                             <IconButton onClick={() => handleEditDialogOpen(task)}>
                                                 <EditIcon />
@@ -228,12 +240,12 @@ const Home = () => {
                                                 <DeleteIcon />
                                             </IconButton>
                                         </TableCell>
-                                    ) : null}
+                                    )}
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={7} align="center">No tasks available</TableCell>
+                                <TableCell colSpan={isAdmin ? 7 : 6}>No tasks available</TableCell>
                             </TableRow>
                         )}
                     </TableBody>
